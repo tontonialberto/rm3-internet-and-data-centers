@@ -55,3 +55,11 @@ APACHE2
 systemctl start apache2
 
 i file statici vanno in /var/www/html
+
+
+-----
+
+
+RISORSE:
+https://kathara-lab-generator-gui.vercel.app/
+https://github.com/tontonialberto/rm3-internet-and-data-centers
