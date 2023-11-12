@@ -1,0 +1,57 @@
+ip link
+ip address
+ip address add <ip address>/<mask> dev <interface>
+
+ip route // ispeziona tabella di routing (data plane)
+ip route add default via <router address> dev <interface>
+ip route add <network address>/<mask> via <router address> dev <interface>
+
+tcpdump -tenni <interface>
+
+traceroute <dst ip address>
+
+----
+
+FRR
+
+Files da includere sempre:
+/etc/frr/daemons
+/etc/frr/vtysh.conf
+
+systemctl start frr
+
+vtysh.conf
+    service integrated-vtysh-config
+
+vtysh
+
+    show ip route
+
+RIP:
+
+frr.conf (rip)
+    router rip
+    redistribute connected
+    network <network address>/<mask> // invia dati multicast RIP su tutte le interfacce che matchano questo prefisso
+    route <network address>/<mask> // iniettare rotta statica in rip (bisogna anche mettere la default usando "ip route" da bash)
+
+OSPF:
+    router ospf
+    network <network address>/<mask> area 0.0.0.0 // parla OSPF su tutte le interfacce che matchano il prefisso. Area OSPF 0.
+    redistribute connected
+
+    interface <interface>
+    ospf cost <number>
+
+show ip ospf interface
+show ip ospf database
+show ip ospf database router
+show ip ospf database network
+
+------
+
+APACHE2
+
+systemctl start apache2
+
+i file statici vanno in /var/www/html

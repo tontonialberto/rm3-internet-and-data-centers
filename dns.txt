@@ -1,0 +1,78 @@
+lezione 26/10/23
+
+ogni macchina ha un resolver dns locale, che si occupa di fare tutte le query per ottenere l'ip associato al nome di dominio.
+
+fqdn: nome di dominio che finisce con un punto.
+
+root dell'albero dns: .
+
+una macchina può specificare un "dominio di ricerca": così può contattare tutte le macchine 
+in quel dominio senza dover specificare il nome completo.
+
+ogni zona ha un server autorità.
+
+macchina fisica -> autorità per il dominio dominio:
+dnsroot -> ""
+dnsuni -> uniroma3
+dns[qualcosa] -> ...
+
+i resolver locali sono denominati con local[qualcosa] e sono macchine fisiche.
+
+esempio delegazione: dnsnet delega dnsstart per il dominio startup.net
+
+su linux il resolver locale si trova su /etc/resolv.conf
+
+named.conf:
+    include "/etc/bind/named.conf.options";
+
+    zone "." {
+        type hint; // non sono il master. TUTTI i dns server TRANNE LA ROOT devono avere hint a root
+        file "/etc/bind/db.root";
+    };
+
+    zone "uniroma3.it" {
+        type master; // sono il master per questa zona. 
+        file "/etc/bind/db.it.uniroma3";
+    };
+
+named.conf.options: è sempre lo stesso. Se non specificata, il server dns non parte.
+
+formato di un record dns: (usato per fare le query)
+    <domain> nome del dominio proprietario del record
+    <class> IN (internet. Usa sempre questa anche per dns locali) 
+    <type> 
+        A: indirizzo IPv4
+        AAAA: indirizzo ipv6
+        A6: indirizzo ipv6 (obsoleto)
+        MX: server di posta elettronica
+        NS: il nameserver autorità per la zona
+        PTR: (non lo useremo)
+        SOA: start of authority. Si usa per capire cosa c'è in un name server
+    <rdata> valore del record in base al valore di <type>
+
+glue record (vedi db.root): client mi chiede l'autorità per ".". Anzichè dargli un nome di dominio gli do anche l'ip (quindi invio quel record in risposta) così il client non deve fare un'altra query.
+
+db.it.uniroma3: TTL in secondi.
+@: riferito alla zona "uniroma3.it" (vedi named.conf che lo dichiara)
+
+$TTL    60000
+@               IN      SOA     dnsuni.uniroma3.it.    root.dnsuni.uniroma3.it. (
+    2006031201 ; serial, cambialo a ogni versione del file (data scritta a rovescio)
+    28 ; refresh, ogni quanto chiedere al server master se ci sono modifiche 
+    14 ; retry
+    3600000 ; expire, dopo quanto fermarsi se non ricevo risposta
+    0 ; negative cache ttl. le risposte DNS negative non vengono salvate nella cache locale
+) # configurazioni in cui ci sono copie della stessa authority
+
+@						IN	NS	dnsuni.uniroma3.it.
+dnsuni.uniroma3.it.		IN	A	192.168.0.11
+
+pc1.uniroma3.it.		IN	A	192.168.0.111
+localuni.uniroma3.it.	IN	A	192.168.0.110
+
+Nota: i resolver locali non hanno un nome di dominio in quanto sono proprio loro a fornire tale conoscenza.
+
+allow-recursion: quali sono gli ip autorizzati a fare domande a questo server. Va messo solo nei resolver locali.
+
+utile per debuggare:
+dig +trace <nome di dominio>

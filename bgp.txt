@@ -1,0 +1,15 @@
+router bgp <as number> // entro nella configurazione bgp e comunico il mio numero di AS
+neighbor <neigh ip> remote-as <as number> // definisco un peer bgp
+neighbor <neigh ip> description <text> // definisco la descrizione del peer bgp
+
+all'inizio vedo solo le reti direttam. connesse.
+
+show ip bgp route
+show ip bgp summary
+    -> MsgRcvd, MsgSent, Up/Down
+show ip bgp neighbors
+    -> Message statistics (mostra le informazioni sui pacchetti inviati e ricevuti con il vicino)
+
+tree
+wc
+less

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello There</title>
+</head>
+<body>
+    <div class="container">
+        Page is loading...
+    </div>
+    <script>
+        window.onload = () => {
+            const containerElement = document.getElementById("container");
+            let counter = 0;
+            const buttonReset = document.createElement("button");
+            buttonReset.addEventListener("click", () => {
+                counter = 0;
+            });
+            setInterval(() => {
+                counter += 1;
+                containerElement.innerText = `Counter is: ${counter}<br>`;
+                containerElement.appendChild(buttonReset);
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
