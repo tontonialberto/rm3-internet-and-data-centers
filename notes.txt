@@ -57,6 +57,24 @@ systemctl start apache2
 i file statici vanno in /var/www/html
 
 
+------
+
+BGP
+
+### IMPORTANTISSIMO!!!! ###
+    router bgp <my as number>
+
+Peering setup:
+    neighbor <ip> remote-as <asn>
+    neighbor <ip> description <text>
+
+Per verificare che funziona:
+- tail -f /var/log/frr/frr.log e cerca i messaggi BGP
+- show ip bgp summary (vedi messaggi ricevuti e inviati)
+- show ip bgp neighbors (fornisce più dettagli)
+- show ip bgp (dovrebbero esserci 0 prefissi)
+
+
 -----
 
 
