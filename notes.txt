@@ -61,6 +61,10 @@ i file statici vanno in /var/www/html
 
 BGP
 
+debug bgp keepalives
+debug bgp updates in
+debug bgp updates out
+
 ### IMPORTANTISSIMO!!!! ###
     router bgp <my as number>
 
@@ -74,7 +78,29 @@ Per verificare che funziona:
 - show ip bgp neighbors (fornisce più dettagli)
 - show ip bgp (dovrebbero esserci 0 prefissi)
 
+show ip bgp <network address> (mostra gli annunci di quella network e la best route selezionata)
 
+Annunci:
+    network <network address>/<netmask>
+Nota:
+    posso annunciare solo rotte che sono nella mia kernel routing table.
+    Altrimenti posso usare (!!CONTESTUALI BGP!!): 
+        no bgp network import-check
+    
+    Senza filtri "in", non accetto niente in ingresso.
+    Senza filtri "out", non annuncio niente.
+    Se non ho filtri in/out posso usare (contestuale bgp):
+        no bgp ebgp-requires-policy
+
+Filtraggio per prefisso:
+    neighbor <ip> prefix-list <pl-name> in
+    ip prefix-list <pl-name> [seq <N>] permit <network addr>/<netmask> [deny any]
+Nota: metti prima le più specifiche e poi le più generali (any).
+    Per ogni rotta, viene applicata la prima regola applicabile.
+
+Filtraggio per as-path:
+    neighbor <ip> filter-list myACL in
+    ip as-path access-list myACL permit ^200_300
 -----
 
 
