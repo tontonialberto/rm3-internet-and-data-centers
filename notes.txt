@@ -43,6 +43,10 @@ OSPF:
     interface <interface>
     ospf cost <number>
 
+REDISTRIBUIRE ROTTE BGP AI ROUTER INTERNI:
+    sul router di frontiera che parla anche rip:
+        redistribute bgp
+
 show ip ospf interface
 show ip ospf database
 show ip ospf database router
