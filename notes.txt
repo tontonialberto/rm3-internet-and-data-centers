@@ -105,9 +105,84 @@ Nota: metti prima le più specifiche e poi le più generali (any).
 Filtraggio per as-path:
     neighbor <ip> filter-list myACL in
     ip as-path access-list myACL permit ^200_300
+
+Relazioni customer-provider:
+    - Stub: customer ha 1 link verso un solo provider
+    - Multi homed stub: customer ha 2 link verso lo stesso provider
+    - Multi homed: customer ha 2 link verso 2 provider
+
+Ho 2 link l1 e l2. Per usare come backup l2 e in tutti gli altri casi l2 (lato customer):
+    - Annuncio out (customer -> provider) aumento la metric su l2
+    - Annuncio in (provider -> customer) diminuisco la local pref su l2
+Default metric: 0
+Default local pref: 100
+
+route maps:
+    neighbor <ip> route-map <name> <in|out>
+    route-map <name> permit <seq-number>
+        match ip address <acl-name|prefix-list <prefix-list-name>>
+        set <metric|local-preference> <number>
+    access-list <name> permit|deny <network/mask>
 -----
 
 
 RISORSE:
 https://kathara-lab-generator-gui.vercel.app/
 https://github.com/tontonialberto/rm3-internet-and-data-centers
+
+
+-----
+
+DNS: 
+
+IN TUTTI I NS:
+systemctl start named
+
+nei pc: /etc/resolv.conf
+    nameserver <default ipv4 of name server (use local ns if possible)>
+    search <sottodominio>
+
+negli authoritative name server: 
+    /etc/bind/named.conf.options:
+        options {
+            directory "/var/cache/bind";
+        };
+    (PER I LOCAL NAME SERVER) /etc/bind/named.conf.options:
+        options {
+            directory "/var/cache/bind";
+            allow-recursion { <ipv4/netmask della rete in cui cercare il NS primario>; };
+            dnssec-validation no;
+        };
+    
+    (ANCHE PER I LOCAL NS SERVE L'HINT A ROOT)
+    /etc/bind/named.conf:
+        include "/etc/bind/named.conf.options";
+        
+        zone "<sottodominio oppure .>" {
+            type <hint|master>;
+            file "/etc/bind/db.<sottodominio a rovescio oppure root>";
+        };
+    
+
+    (PER TUTTI I NAME SERVER TRANNE ROOT) /etc/bind/db.root:
+        .               IN      NS      ROOT-SERVER.
+        ROOT-SERVER.    IN      A       <ipv4 del root assoluto>
+
+    (per il dominio gestito da quel NS) /etc/bind/db.<sottodominio a rovescio>:
+        $TTL 60000
+        @   IN  SOA <FQDN del NS con punto finale> root.<FQDN del NS con punto finale> (
+            2006031201 ; serial
+            28 ; refresh
+            14 ; retry
+            3600000 ; expire
+            0 ; negative cache ttl
+        )
+
+        @   IN  NS <FQDN del NS con punto finale>
+
+        ; per ogni PC in quel dominio (compresi i local NS, e sè stesso)
+        <nome pc>.<FQDN del NS con punto finale>    IN  A  <ipv4 del PC>
+
+        ; per ogni NS per zone DIRETTAMENTE sottostanti a questo dominio
+        <sottodominio con punto finale>     IN NS   <FQDN del NS primario, con punto finale>
+        <FQDN del NS primario, con punto finale> IN A <il suo ipv4>

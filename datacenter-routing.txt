@@ -1,0 +1,51 @@
+14/12/2023 (lab data-center-bgp)
+
+per supportare multipath su Windows:
+- scarica vmware con linux e esegui il lab lì sopra
+oppure
+- usa il lab su windows che non supporterà multipath, e poi vai a esercitarti in lab campus
+ (devi commentare leaf_1_0_1[sysctl]="net.ipv4.fib_multipath_hash_policy=1")
+
+naming convention:
+x: # PoD, contato da sinistra verso destra
+y: livello (leaf 0)
+z: numero dell'entità
+
+Nota: per il fatto di ipv6 linklocal, non assegno gli ip alle macchine della fabric.
+Assegno solo gli ip ai server.
+
+lab.conf:
+- la fabric ha kathara/frr
+- i server la base in quanto non eseguono demoni di routing
+
+sysctl: consente di cambiare i parametri del kernel.
+leaf_1_0_1[sysctl]="net.ipv4.fib_multipath_hash_policy=1"
+
+abilita ipv6 sul pc chiamato "fabric":
+fabric[ipv6]=True
+(gli ipv6 linklocal funzionano solo sul link, cioè proprio su quel cavo)
+
+Il peering bgp è ipv6 ma trasporta indirizzi ipv4.
+
+Un ipv6 linklocal inizia con fe80.
+
+Esempio:
+
+__
+10.10.0.0/24 ---- |r1| ------- |r2|
+               fe80::1/64    fe80::2/64
+
+Nella tab routing di r2:
+10.10.0.0/24 via fe80:1 
+Il modo con cui instradare ipv4 su un link ipv6-only si basa sul MAC del destinatario (tanto ogni router per instradare un pacchetto deve fare ARP per ottenere il MAC del destinatario).
+
+kathara settings -> disabilita l'apertura dei terminali.
+
+kathara connect <nome macchina>
+
+fare ping tra server_1_1_1 e server_2_2_2
+il traffico passa su b e j
+sniffare usando leaf_1_0_1 o spine_1_1_2 (icmp) (oppure "tcpdump -tenni any icmp" che ti dice da quale interfaccia passa e sniffa tutte le interfacce e la direzione)
+Spengo il link B e vedo che i pacchetti vengono redirezionati su A (spine_1_1_1) SENZA PERDERE NEMMENO UN PACCHETTO.
+
+traceroute tra questi due server "non funziona" nel senso che i router intermedi hanno un ip "a caso" (192.0.0.8) poichè non dispongono di un ipv4. 

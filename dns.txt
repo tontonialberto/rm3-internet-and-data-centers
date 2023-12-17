@@ -11,7 +11,7 @@ in quel dominio senza dover specificare il nome completo.
 
 ogni zona ha un server autorità.
 
-macchina fisica -> autorità per il dominio dominio:
+macchina fisica -> autorità per il dominio:
 dnsroot -> ""
 dnsuni -> uniroma3
 dns[qualcosa] -> ...
